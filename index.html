@@ -317,6 +317,41 @@ function renderListado(){
 
 function renderAll(){ renderDashboard(); renderListado(); }
 
+/* ---------- GENERADOR DE GRÁFICAS (canvas -> imagen PNG) ---------- */
+function makeBarChartImage(title, items, colorFn){
+  const n = Math.max(items.length, 1);
+  const marginLeft = 210, marginRight = 50, marginTop = 46, marginBottom = 20;
+  const gap = 38, barHeight = 22, chartW = 460;
+  const W = marginLeft + chartW + marginRight;
+  const H = marginTop + n*gap + marginBottom;
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle = '#1F3864'; ctx.font = 'bold 16px Arial, sans-serif';
+  ctx.fillText(title, 14, 26);
+  ctx.strokeStyle = '#dcdcdc'; ctx.beginPath(); ctx.moveTo(14,34); ctx.lineTo(W-14,34); ctx.stroke();
+  const max = Math.max(1, ...items.map(i=>i.value));
+  items.forEach((it,i)=>{
+    const y = marginTop + i*gap + (gap-barHeight)/2;
+    const w = max ? (it.value/max)*chartW : 0;
+    ctx.fillStyle = colorFn(it,i);
+    ctx.fillRect(marginLeft, y, Math.max(w,2), barHeight);
+    ctx.fillStyle = '#222222'; ctx.font = '13px Arial, sans-serif'; ctx.textAlign = 'right';
+    let lbl = it.label.length > 26 ? it.label.slice(0,24)+'…' : it.label;
+    ctx.fillText(lbl, marginLeft-10, y+barHeight/2+5);
+    ctx.textAlign = 'left'; ctx.font = 'bold 13px Arial, sans-serif';
+    ctx.fillText(String(it.value), marginLeft+w+8, y+barHeight/2+5);
+  });
+  if(!items.length){
+    ctx.fillStyle = '#888'; ctx.font = '13px Arial, sans-serif'; ctx.textAlign='left';
+    ctx.fillText('Sin datos registrados en el periodo.', marginLeft, marginTop+16);
+  }
+  return canvas.toDataURL('image/png');
+}
+const COLOR_ESTADO_PRINT = {Abierto:'#D98A2B','En gestión':'#8B5FBF', Pendiente:'#C8465B', Completado:'#1F9D73', Cerrado:'#3D6FD1'};
+function chartImgTag(dataUrl, w){ return `<img src="${dataUrl}" width="${w||600}" style="display:block;margin:8px 0 4px;">`; }
+
 /* ---------- EXPORTAR A WORD ---------- */
 function exportWord(){
   const data = filteredCasos();
@@ -334,10 +369,30 @@ function exportWord(){
     data.filter(c=>c.categoria===categoria).forEach(c=>{ counts[c.subtipo]=(counts[c.subtipo]||0)+1; });
     return Object.keys(counts).map(k=>`<tr><td>${k}</td><td style="text-align:center;">${counts[k]}</td></tr>`).join('');
   }
+  function subtipoItems(categoria){
+    const opts = SUBTIPOS[categoria].options;
+    const counts = {}; opts.forEach(o=>counts[o]=0);
+    data.filter(c=>c.categoria===categoria).forEach(c=>{ counts[c.subtipo]=(counts[c.subtipo]||0)+1; });
+    return Object.keys(counts).map(k=>({label:k, value:counts[k]})).sort((a,b)=>b.value-a.value);
+  }
 
   const detalleFilas = data.map(c=>`<tr>
     <td>${c.categoria}</td><td>${c.subtipo}</td><td>${c.detalle||'—'}</td><td>${c.fecha}</td><td>${c.estado}</td><td>${c.descripcion||''}</td>
   </tr>`).join('');
+
+  /* generar imágenes de gráficas */
+  const imgEstado = makeBarChartImage('Casos por estado',
+    ESTADOS.map(e=>({label:e, value:porEstado[e]||0})),
+    (it)=>COLOR_ESTADO_PRINT[it.label]||'#3D6FD1');
+  const imgCategoria = makeBarChartImage('Casos por categoría',
+    Object.keys(porCat).map(c=>({label:c, value:porCat[c]})),
+    ()=>'#3D6FD1');
+  const imgSoftware = makeBarChartImage('Reportes de Software por programa',
+    subtipoItems('Reporte de Software'), ()=>'#1F9D73');
+  const imgInfra = makeBarChartImage('Infraestructura — Hardware vs Software',
+    subtipoItems('Infraestructura'), ()=>'#D98A2B');
+  const imgDatos = makeBarChartImage('Gestión de Datos por tipo de solicitud',
+    subtipoItems('Gestión de Datos'), ()=>'#8B5FBF');
 
   const T = (s)=> '<'+s+'>';
   const html = `
@@ -357,23 +412,28 @@ function exportWord(){
     <div class="sub">Gestor TDI · Periodo: ${desde} a ${hasta} · Generado el ${today()}</div>
 
     <h2>Resumen general</h2>
+    ${chartImgTag(imgEstado, 620)}
     <table><tr><th>Indicador</th><th>Valor</th></tr>
       <tr><td>Total de casos registrados</td><td>${total}</td></tr>
       ${ESTADOS.map(e=>`<tr><td>${e}</td><td>${porEstado[e]||0}</td></tr>`).join('')}
     </table>
 
     <h2>Casos por categoría</h2>
+    ${chartImgTag(imgCategoria, 620)}
     <table><tr><th>Categoría</th><th>Casos</th></tr>
       ${Object.keys(porCat).map(c=>`<tr><td>${c}</td><td>${porCat[c]}</td></tr>`).join('')}
     </table>
 
     <h2>Reportes de Software — detalle por programa</h2>
+    ${chartImgTag(imgSoftware, 620)}
     <table><tr><th>Software</th><th>Casos</th></tr>${subtipoTableRows('Reporte de Software')}</table>
 
     <h2>Infraestructura — detalle por tipo de servicio</h2>
+    ${chartImgTag(imgInfra, 620)}
     <table><tr><th>Tipo de servicio</th><th>Casos</th></tr>${subtipoTableRows('Infraestructura')}</table>
 
     <h2>Gestión de Datos — detalle por tipo de solicitud</h2>
+    ${chartImgTag(imgDatos, 620)}
     <table><tr><th>Tipo de solicitud</th><th>Casos</th></tr>${subtipoTableRows('Gestión de Datos')}</table>
 
     <h2>Listado detallado de casos</h2>
