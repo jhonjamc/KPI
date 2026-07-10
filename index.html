@@ -104,8 +104,8 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
     <div class="panel">
       <div class="panel-head"><h3>Filtrar periodo</h3></div>
       <div class="panel-body filterbar">
-        <div class="field"><label>Desde (fecha de registro)</label><input type="date" id="fDesde"></div>
-        <div class="field"><label>Hasta (fecha de registro)</label><input type="date" id="fHasta"></div>
+        <div class="field"><label>Desde (periodo)</label><input type="date" id="fDesde"></div>
+        <div class="field"><label>Hasta (periodo)</label><input type="date" id="fHasta"></div>
         <button class="btn secondary" onclick="renderDashboard()">Aplicar</button>
         <button class="btn secondary" onclick="document.getElementById('fDesde').value='';document.getElementById('fHasta').value='';renderDashboard();">Ver todo</button>
       </div>
@@ -135,14 +135,13 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
             <select id="audSelect" required></select>
           </div>
           <div id="subFieldsContainer" style="display:contents;"></div>
-          <div class="field"><label>Fecha de registro (viernes)</label><input type="date" id="fechaInput" required></div>
-          <div class="field" style="min-width:200px;"><label>Periodo auditado</label><div class="periodo-box" id="periodoPreviewText">—</div></div>
+          <div class="field"><label>Periodo desde</label><input type="date" id="periodoInicioInput" required></div>
+          <div class="field"><label>Periodo hasta</label><input type="date" id="periodoFinInput" required></div>
           <div class="field"><label>Resultado</label>
             <select id="resultadoInput"><option>Cumplió</option><option>No cumplió</option></select>
           </div>
-          <div class="field"><label>Hallazgos / doc. pendientes</label><input type="number" id="hallazgosInput" min="0" value="0"></div>
-          <div class="field"><label>Estado</label>
-            <select id="estadoInput"><option>Realizada</option><option>Pendiente</option></select>
+          <div class="field" style="min-width:260px;"><label>Documentos pendientes / hallazgos</label>
+            <textarea id="hallazgosInput" rows="2" placeholder="Uno por línea, ej: Factura 00123&#10;Remisión 4521 — dejar vacío si no hay pendientes"></textarea>
           </div>
           <div class="field" style="min-width:220px;"><label>Observaciones</label><input type="text" id="obsInput" placeholder="Opcional"></div>
           <button class="btn" type="submit">Registrar auditoría</button>
@@ -157,11 +156,6 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
       <div class="panel-head filterbar" style="width:100%;">
         <div class="field"><label>Auditoría</label>
           <select id="listAud" onchange="renderListado()"><option value="">Todas</option></select>
-        </div>
-        <div class="field"><label>Estado</label>
-          <select id="listEstado" onchange="renderListado()">
-            <option value="">Todos</option><option>Realizada</option><option>Pendiente</option>
-          </select>
         </div>
         <div class="field"><label>Resultado</label>
           <select id="listResultado" onchange="renderListado()">
@@ -185,20 +179,18 @@ const AUDITORIAS_CONFIG = [
  {id:7, nombre:'7. Pedidos por ítem', modo:'persona'}
 ];
 const TIPOS_PUNTO = ['001 Plantas de producción','002 Puntos de venta'];
-const ESTADOS_AUD = ['Realizada','Pendiente'];
 const RESULTADOS_AUD = ['Cumplió','No cumplió'];
-const ESTADO_TAG = {Realizada:'ok', Pendiente:'bad'};
 
 let AUDITS = [];
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
+function addDays(dateStr, n){ const d = new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
 const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-function periodoAuditado(fechaStr){
-  if(!fechaStr) return '—';
-  const d = new Date(fechaStr+'T00:00:00');
-  const fin = new Date(d); fin.setDate(fin.getDate()-1);
-  const inicio = new Date(d); inicio.setDate(inicio.getDate()-7);
+function formatPeriodo(inicioStr, finStr){
+  if(!inicioStr || !finStr) return '—';
+  const inicio = new Date(inicioStr+'T00:00:00');
+  const fin = new Date(finStr+'T00:00:00');
   const dd = (dt)=> String(dt.getDate()).padStart(2,'0');
   const mIni = MESES_CORTOS[inicio.getMonth()], mFin = MESES_CORTOS[fin.getMonth()];
   if(mIni===mFin && inicio.getFullYear()===fin.getFullYear()) return `${dd(inicio)} - ${dd(fin)} ${mFin} ${fin.getFullYear()}`;
@@ -220,13 +212,12 @@ function detalleLabel(rec){
 async function loadAll(){
   try{ const r = await window.storage.get('auditorias_siesa', false); AUDITS = r ? JSON.parse(r.value) : []; }catch(e){ AUDITS = []; }
   initFormStatics();
-  document.getElementById('fechaInput').value = todayStr();
-  updatePeriodoPreview();
-  document.getElementById('fechaInput').addEventListener('input', updatePeriodoPreview);
+  setDefaultPeriodo();
   renderAll();
 }
-function updatePeriodoPreview(){
-  document.getElementById('periodoPreviewText').textContent = periodoAuditado(document.getElementById('fechaInput').value);
+function setDefaultPeriodo(){
+  document.getElementById('periodoInicioInput').value = addDays(todayStr(), -7);
+  document.getElementById('periodoFinInput').value = addDays(todayStr(), -1);
 }
 async function persist(){
   try{ await window.storage.set('auditorias_siesa', JSON.stringify(AUDITS), false); }catch(e){ console.error('storage error', e); }
@@ -307,6 +298,12 @@ document.getElementById('fAud').addEventListener('submit', e=>{
   const entidad = entidadEl ? entidadEl.value.trim() : '';
   if(!entidad){ showToast('Falta indicar el responsable / punto / bodega'); return; }
   if(cfg.modo==='punto' && !document.getElementById('tipoPuntoSelect').value){ showToast('Selecciona el tipo de punto'); return; }
+  const periodoInicio = document.getElementById('periodoInicioInput').value;
+  const periodoFin = document.getElementById('periodoFinInput').value;
+  if(!periodoInicio || !periodoFin){ showToast('Selecciona el periodo auditado'); return; }
+
+  const hallazgosDetalle = document.getElementById('hallazgosInput').value
+    .split('\n').map(s=>s.trim()).filter(Boolean);
 
   const rec = {
     id: uid(),
@@ -314,10 +311,10 @@ document.getElementById('fAud').addEventListener('submit', e=>{
     tipoPunto: cfg.modo==='punto' ? document.getElementById('tipoPuntoSelect').value : null,
     entidad,
     encargado: cfg.modo==='bodega' ? (document.getElementById('encargadoInput').value.trim()||null) : null,
-    fecha: document.getElementById('fechaInput').value,
+    periodoInicio,
+    periodoFin,
     resultado: document.getElementById('resultadoInput').value,
-    hallazgos: Number(document.getElementById('hallazgosInput').value||0),
-    estado: document.getElementById('estadoInput').value,
+    hallazgosDetalle,
     observaciones: document.getElementById('obsInput').value
   };
   AUDITS.unshift(rec);
@@ -325,8 +322,7 @@ document.getElementById('fAud').addEventListener('submit', e=>{
   e.target.reset();
   document.getElementById('subFieldsContainer').innerHTML = '';
   document.getElementById('audSelect').value = '';
-  document.getElementById('fechaInput').value = todayStr();
-  updatePeriodoPreview();
+  setDefaultPeriodo();
   renderAll();
   showToast('Auditoría registrada correctamente');
 });
@@ -340,59 +336,52 @@ function showToast(msg){
   window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
 }
 
-function updateEstado(id, value){
-  const r = AUDITS.find(x=>x.id===id); if(!r) return;
-  r.estado = value; persist(); renderAll();
-}
 function delAud(id){ AUDITS = AUDITS.filter(r=>r.id!==id); persist(); renderAll(); }
-window.updateEstado = updateEstado; window.delAud = delAud;
+window.delAud = delAud;
 
-/* filtered by period (fecha de registro) */
+/* filtered by period (periodoInicio) */
 function filteredAudits(){
   const desde = document.getElementById('fDesde').value;
   const hasta = document.getElementById('fHasta').value;
   return AUDITS.filter(r=>{
-    if(desde && r.fecha < desde) return false;
-    if(hasta && r.fecha > hasta) return false;
+    if(desde && r.periodoInicio < desde) return false;
+    if(hasta && r.periodoInicio > hasta) return false;
     return true;
   });
 }
 
 /* ---------- DASHBOARD ---------- */
 function cumplimientoPct(subset){
-  const realizadas = subset.filter(r=>r.estado==='Realizada');
-  if(!realizadas.length) return null;
-  const cumplidas = realizadas.filter(r=>r.resultado==='Cumplió').length;
-  return (cumplidas/realizadas.length)*100;
+  if(!subset.length) return null;
+  const cumplidas = subset.filter(r=>r.resultado==='Cumplió').length;
+  return (cumplidas/subset.length)*100;
 }
 function renderDashboard(){
   const data = filteredAudits();
   const total = data.length;
   const pctGeneral = cumplimientoPct(data);
-  const totalHallazgos = data.reduce((s,r)=>s+Number(r.hallazgos||0),0);
-  const pendientes = data.filter(r=>r.estado==='Pendiente').length;
-  const noCumplio = data.filter(r=>r.estado==='Realizada' && r.resultado==='No cumplió').length;
+  const totalHallazgos = data.reduce((s,r)=>s+(r.hallazgosDetalle?r.hallazgosDetalle.length:0),0);
+  const noCumplio = data.filter(r=>r.resultado==='No cumplió').length;
 
   document.getElementById('kpiGeneral').innerHTML = `
     <div class="card"><div class="k-lbl">Auditorías registradas</div><div class="k-val">${total}</div></div>
     <div class="card accent-${pctGeneral===null?'':pctGeneral>=80?'ok':pctGeneral>=50?'warn':'bad'}"><div class="k-lbl">% Cumplimiento general</div><div class="k-val">${pctGeneral===null?'—':pctGeneral.toFixed(0)+'%'}</div></div>
-    <div class="card accent-${totalHallazgos===0?'ok':'warn'}"><div class="k-lbl">Hallazgos / doc. pendientes</div><div class="k-val">${totalHallazgos}</div></div>
+    <div class="card accent-${totalHallazgos===0?'ok':'warn'}"><div class="k-lbl">Documentos pendientes</div><div class="k-val">${totalHallazgos}</div></div>
     <div class="card accent-${noCumplio===0?'ok':'bad'}"><div class="k-lbl">No cumplieron</div><div class="k-val">${noCumplio}</div></div>
-    <div class="card accent-${pendientes===0?'ok':'warn'}"><div class="k-lbl">Pendientes</div><div class="k-val">${pendientes}</div></div>
   `;
 
   document.getElementById('gridAud').innerHTML = AUDITORIAS_CONFIG.map(a=>{
     const subset = data.filter(r=>r.auditoriaId===a.id);
     const veces = subset.length;
     const pct = cumplimientoPct(subset);
-    const hall = subset.reduce((s,r)=>s+Number(r.hallazgos||0),0);
+    const hall = subset.reduce((s,r)=>s+(r.hallazgosDetalle?r.hallazgosDetalle.length:0),0);
     return `<div class="aud-card">
       <div class="num">AUDITORÍA ${a.id}</div>
       <div class="name">${a.nombre.replace(a.id+'. ','')}</div>
       <div class="stats">
         <div>Realizadas<b>${veces}</b></div>
         <div>Cumplimiento<b>${pct===null?'—':pct.toFixed(0)+'%'}</b></div>
-        <div>Hallazgos<b>${hall}</b></div>
+        <div>Doc. pendientes<b>${hall}</b></div>
       </div>
     </div>`;
   }).join('');
@@ -404,10 +393,9 @@ function renderDashboard(){
 }
 
 function rankingHtml(subset){
-  const realizadas = subset.filter(r=>r.estado==='Realizada');
-  if(!realizadas.length) return '<div class="empty">Sin auditorías realizadas en el periodo.</div>';
+  if(!subset.length) return '<div class="empty">Sin auditorías registradas en el periodo.</div>';
   const byResp = {};
-  realizadas.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
+  subset.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
   const rows = Object.keys(byResp).map(k=>({k, pct: byResp[k].cumplio/byResp[k].total*100, total:byResp[k].total}))
     .sort((a,b)=>b.pct-a.pct);
   return rows.map((r,i)=>{
@@ -424,24 +412,22 @@ function rankingHtml(subset){
 /* ---------- LISTADO ---------- */
 function renderListado(){
   const audFilter = document.getElementById('listAud').value;
-  const estFilter = document.getElementById('listEstado').value;
   const resFilter = document.getElementById('listResultado').value;
-  const rows = AUDITS.filter(r=> (!audFilter||r.auditoriaId===Number(audFilter)) && (!estFilter||r.estado===estFilter) && (!resFilter||r.resultado===resFilter) )
+  const rows = AUDITS.filter(r=> (!audFilter||r.auditoriaId===Number(audFilter)) && (!resFilter||r.resultado===resFilter) )
     .map(r=>{
       const cfg = cfgFor(r.auditoriaId);
+      const hall = r.hallazgosDetalle||[];
       return `<tr>
       <td>${cfg.nombre}</td>
       <td>${detalleLabel(r)}</td>
       <td>${responsableLabel(r)}</td>
-      <td class="mono">${periodoAuditado(r.fecha)}</td>
+      <td class="mono">${formatPeriodo(r.periodoInicio, r.periodoFin)}</td>
       <td><span class="tag ${r.resultado==='Cumplió'?'ok':'bad'}">${r.resultado}</span></td>
-      <td class="mono">${r.hallazgos}</td>
-      <td><select class="status-inline" onchange="updateEstado('${r.id}',this.value)">
-        ${ESTADOS_AUD.map(e=>`<option ${e===r.estado?'selected':''}>${e}</option>`).join('')}</select></td>
+      <td>${hall.length ? `<span class="tag warn">${hall.length}</span> ${hall.join('; ')}` : '<span class="tag ok">0</span>'}</td>
       <td>${r.observaciones||''}</td>
       <td><button class="btn danger" onclick="delAud('${r.id}')">Eliminar</button></td>
     </tr>`;});
-  document.getElementById('tblAud').innerHTML = `<tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Hallazgos</th><th>Estado</th><th>Observaciones</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="9" class="empty">Sin auditorías registradas aún.</td></tr>'}`;
+  document.getElementById('tblAud').innerHTML = `<tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Observaciones</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="8" class="empty">Sin auditorías registradas aún.</td></tr>'}`;
 }
 
 function renderAll(){ renderDashboard(); renderListado(); }
@@ -490,10 +476,11 @@ function exportWord(){
 
   const detalleFilas = data.map(r=>{
     const cfg = cfgFor(r.auditoriaId);
+    const hall = r.hallazgosDetalle||[];
     return `<tr>
-    <td>${cfg.nombre}</td><td>${detalleLabel(r)}</td><td>${responsableLabel(r)}</td><td>${periodoAuditado(r.fecha)}</td>
-    <td style="text-align:center;">${r.resultado}</td><td style="text-align:center;">${r.hallazgos}</td>
-    <td>${r.estado}</td><td>${r.observaciones||''}</td>
+    <td>${cfg.nombre}</td><td>${detalleLabel(r)}</td><td>${responsableLabel(r)}</td><td>${formatPeriodo(r.periodoInicio, r.periodoFin)}</td>
+    <td style="text-align:center;">${r.resultado}</td><td>${hall.length ? hall.join('; ') : '—'}</td>
+    <td>${r.observaciones||''}</td>
   </tr>`;}).join('');
 
   /* gráfica general: % cumplimiento por auditoría */
@@ -504,16 +491,16 @@ function exportWord(){
       return {label:a.nombre, value: pct===null?0:Math.round(pct)};
     }), it=>pctColor(it.value));
 
-  const imgHallazgos = makeBarChartImage('Hallazgos / documentos pendientes por auditoría',
+  const imgHallazgos = makeBarChartImage('Documentos pendientes / hallazgos por auditoría',
     AUDITORIAS_CONFIG.map(a=>{
       const subset = data.filter(r=>r.auditoriaId===a.id);
-      const hall = subset.reduce((s,r)=>s+Number(r.hallazgos||0),0);
+      const hall = subset.reduce((s,r)=>s+(r.hallazgosDetalle?r.hallazgosDetalle.length:0),0);
       return {label:a.nombre, value: hall};
     }), ()=>'#8B5FBF');
 
   /* gráficas por auditoría: ranking de responsables por % cumplimiento */
   const imgsPorAuditoria = AUDITORIAS_CONFIG.map(a=>{
-    const subset = data.filter(r=>r.auditoriaId===a.id).filter(r=>r.estado==='Realizada');
+    const subset = data.filter(r=>r.auditoriaId===a.id);
     const byResp = {};
     subset.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
     const items = Object.keys(byResp).map(k=>({label:k, value: Math.round(byResp[k].cumplio/byResp[k].total*100)}))
@@ -541,14 +528,14 @@ function exportWord(){
     <h2>Resumen — % de cumplimiento por auditoría</h2>
     ${chartImgTag(imgCumplimiento, 640)}
 
-    <h2>Resumen — hallazgos / documentos pendientes por auditoría</h2>
+    <h2>Resumen — documentos pendientes / hallazgos por auditoría</h2>
     ${chartImgTag(imgHallazgos, 640)}
 
     ${imgsPorAuditoria.map(o=>`<h2>${o.titulo}</h2>${chartImgTag(o.img, 640)}`).join('')}
 
     <h2>Listado detallado de auditorías</h2>
-    <table><tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Hallazgos</th><th>Estado</th><th>Observaciones</th></tr>
-      ${detalleFilas || '<tr><td colspan="8">Sin auditorías registradas en el periodo.</td></tr>'}
+    <table><tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Observaciones</th></tr>
+      ${detalleFilas || '<tr><td colspan="7">Sin auditorías registradas en el periodo.</td></tr>'}
     </table>
   ${T('/body')}${T('/html')}`;
 
