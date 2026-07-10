@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KPI Gestión TI</title>
+<title>KPI Auditorías Siesa Enterprise</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -16,8 +16,8 @@
 body{margin:0;background:var(--bg);color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:14px;}
 h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;}
 .mono{font-family:'IBM Plex Mono',monospace;}
-.wrap{max-width:1180px;margin:0 auto;padding:0 28px 60px;}
-.topbar{border-bottom:1px solid var(--border);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;}
+.wrap{max-width:1220px;margin:0 auto;padding:0 28px 60px;}
+.topbar{border-bottom:1px solid var(--border);padding:18px 28px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
 .topbar .tag{color:var(--teal);font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;}
 .topbar h1{font-size:19px;margin-top:2px;}
 .tabs{display:flex;gap:6px;margin:22px 0 20px;border-bottom:1px solid var(--border);}
@@ -33,7 +33,7 @@ h1,h2,h3{font-family:'Space Grotesk',sans-serif;margin:0;}
 
 .field{display:flex;flex-direction:column;gap:5px;}
 .field label{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;}
-.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;min-width:150px;}
+.field input,.field select,.field textarea{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:9px 10px;min-width:160px;}
 .field textarea{min-width:220px;resize:vertical;}
 form.rowform{display:flex;flex-wrap:wrap;gap:12px;align-items:end;}
 .btn{background:var(--teal);color:#08201A;border:none;border-radius:6px;padding:10px 18px;font-weight:600;cursor:pointer;}
@@ -51,28 +51,34 @@ tr:last-child td{border-bottom:none;}
 .tag.warn{background:rgba(245,183,89,.15);color:var(--amber);}
 .tag.bad{background:rgba(240,89,107,.15);color:var(--red);}
 .tag.info{background:rgba(91,141,239,.15);color:var(--blue);}
-.tag.mgmt{background:rgba(177,140,240,.15);color:var(--purple);}
 .empty{color:var(--muted);text-align:center;padding:26px;font-size:13px;}
 select.status-inline{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 8px;font-size:12px;}
 
-.grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;}
+.grid-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:20px;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:15px 16px;}
 .card .k-lbl{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.7px;}
 .card .k-val{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;margin-top:6px;}
+.card .k-sub{color:var(--muted);font-size:11px;margin-top:4px;}
 .card.accent-ok{border-color:rgba(52,214,166,.4);}
 .card.accent-warn{border-color:rgba(245,183,89,.4);}
 .card.accent-bad{border-color:rgba(240,89,107,.4);}
-.card.accent-mgmt{border-color:rgba(177,140,240,.4);}
 
-.two-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
-@media (max-width:900px){.two-col{grid-template-columns:1fr;}}
+.grid-aud{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-bottom:20px;}
+.aud-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.aud-card .num{color:var(--teal);font-family:'IBM Plex Mono',monospace;font-size:11px;}
+.aud-card .name{font-weight:600;font-size:13px;margin:2px 0 10px;min-height:34px;}
+.aud-card .stats{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);}
+.aud-card .stats b{color:var(--text);font-family:'IBM Plex Mono',monospace;font-size:15px;display:block;}
+
+.grid-rank{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;}
 .rank-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12.5px;}
 .rank-row:last-child{border-bottom:none;}
 .rank-name{flex:1;}
 .rank-bar-wrap{flex:1;background:var(--bg);border-radius:4px;height:7px;overflow:hidden;}
 .rank-bar{height:100%;border-radius:4px;}
-.rank-val{width:26px;text-align:right;font-family:'IBM Plex Mono',monospace;}
+.rank-val{width:30px;text-align:right;font-family:'IBM Plex Mono',monospace;}
 .filterbar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;}
+.periodo-box{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--teal);font-weight:600;font-family:'IBM Plex Mono',monospace;font-size:12.5px;white-space:nowrap;}
 
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--teal);color:var(--text);padding:12px 22px;border-radius:8px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s ease, transform .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.35);z-index:50;}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
@@ -82,15 +88,15 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
 <body>
 
 <div class="topbar">
-  <div><div class="tag">kpi-gestion-ti</div><h1>Reportes y KPI — Gestor TDI</h1></div>
-  <button class="btn big" onclick="exportWord()">⬇ Descargar reporte KPI (Word)</button>
+  <div><div class="tag">// auditorias-siesa-enterprise</div><h1>KPI Auditorías Semanales — Siesa Enterprise</h1></div>
+  <button class="btn big" onclick="exportWord()">⬇ Descargar informe (Word)</button>
 </div>
 
 <div class="wrap">
   <div class="tabs">
     <div class="tab active" data-view="dashboard">Dashboard / KPI</div>
-    <div class="tab" data-view="registrar">Registrar caso</div>
-    <div class="tab" data-view="listado">Listado de casos</div>
+    <div class="tab" data-view="registrar">Registrar auditoría</div>
+    <div class="tab" data-view="listado">Listado de auditorías</div>
   </div>
 
   <!-- DASHBOARD -->
@@ -98,55 +104,48 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
     <div class="panel">
       <div class="panel-head"><h3>Filtrar periodo</h3></div>
       <div class="panel-body filterbar">
-        <div class="field"><label>Desde</label><input type="date" id="fDesde"></div>
-        <div class="field"><label>Hasta</label><input type="date" id="fHasta"></div>
+        <div class="field"><label>Desde (fecha de registro)</label><input type="date" id="fDesde"></div>
+        <div class="field"><label>Hasta (fecha de registro)</label><input type="date" id="fHasta"></div>
         <button class="btn secondary" onclick="renderDashboard()">Aplicar</button>
         <button class="btn secondary" onclick="document.getElementById('fDesde').value='';document.getElementById('fHasta').value='';renderDashboard();">Ver todo</button>
       </div>
     </div>
 
-    <div class="grid-kpi" id="kpiEstados"></div>
+    <div class="grid-kpi" id="kpiGeneral"></div>
 
-    <div class="panel"><div class="panel-head"><h3>Casos por categoría</h3></div><div class="panel-body" id="kpiCategorias"></div></div>
+    <div class="panel">
+      <div class="panel-head"><h3>Las 7 auditorías — resumen del periodo</h3></div>
+      <div class="panel-body"><div class="grid-aud" id="gridAud"></div></div>
+    </div>
 
-    <div class="two-col">
-      <div class="panel"><div class="panel-head"><h3>Software con más novedades</h3></div><div class="panel-body" id="rankSoftware"></div></div>
-      <div class="panel"><div class="panel-head"><h3>Infraestructura — Hardware vs Software</h3></div><div class="panel-body" id="rankInfra"></div></div>
-      <div class="panel"><div class="panel-head"><h3>Gestión de datos — tipo de solicitud</h3></div><div class="panel-body" id="rankDatos"></div></div>
+    <div class="panel">
+      <div class="panel-head"><h3>Ranking de responsables por auditoría</h3></div>
+      <div class="panel-body"><div class="grid-rank" id="gridRank"></div></div>
     </div>
   </div>
 
   <!-- REGISTRAR -->
   <div class="view" id="v-registrar">
     <div class="panel">
-      <div class="panel-head"><h3>Registrar nuevo caso</h3></div>
+      <div class="panel-head"><h3>Registrar auditoría</h3></div>
       <div class="panel-body">
-        <form class="rowform" id="fCaso">
+        <form class="rowform" id="fAud">
           <div class="field">
-            <label>Categoría</label>
-            <select id="catSelect" name="categoria" required>
-              <option value="">Seleccione...</option>
-              <option value="Reporte de Software">Reporte de Software</option>
-              <option value="Infraestructura">Infraestructura</option>
-              <option value="Gestión de Datos">Gestión de Datos</option>
-            </select>
+            <label>Auditoría</label>
+            <select id="audSelect" required></select>
           </div>
-          <div class="field">
-            <label id="subLabel">Subtipo</label>
-            <select id="subSelect" name="subtipo" required disabled><option value="">Seleccione categoría primero</option></select>
+          <div id="subFieldsContainer" style="display:contents;"></div>
+          <div class="field"><label>Fecha de registro (viernes)</label><input type="date" id="fechaInput" required></div>
+          <div class="field" style="min-width:200px;"><label>Periodo auditado</label><div class="periodo-box" id="periodoPreviewText">—</div></div>
+          <div class="field"><label>Resultado</label>
+            <select id="resultadoInput"><option>Cumplió</option><option>No cumplió</option></select>
           </div>
-          <div class="field">
-            <label id="detailLabel">Detalle</label>
-            <input type="text" name="detalle" id="detalleInput" placeholder="">
-          </div>
-          <div class="field"><label>Fecha</label><input type="date" name="fecha" id="fechaInput" required></div>
+          <div class="field"><label>Hallazgos / doc. pendientes</label><input type="number" id="hallazgosInput" min="0" value="0"></div>
           <div class="field"><label>Estado</label>
-            <select name="estado">
-              <option>Abierto</option><option>En gestión</option><option>Pendiente</option><option>Completado</option><option>Cerrado</option>
-            </select>
+            <select id="estadoInput"><option>Realizada</option><option>Pendiente</option></select>
           </div>
-          <div class="field" style="min-width:220px;"><label>Descripción (opcional)</label><input type="text" name="descripcion"></div>
-          <button class="btn" type="submit">Registrar caso</button>
+          <div class="field" style="min-width:220px;"><label>Observaciones</label><input type="text" id="obsInput" placeholder="Opcional"></div>
+          <button class="btn" type="submit">Registrar auditoría</button>
         </form>
       </div>
     </div>
@@ -156,45 +155,81 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
   <div class="view" id="v-listado">
     <div class="panel">
       <div class="panel-head filterbar" style="width:100%;">
-        <div class="field"><label>Categoría</label>
-          <select id="listCat" onchange="renderListado()">
-            <option value="">Todas</option>
-            <option>Reporte de Software</option><option>Infraestructura</option><option>Gestión de Datos</option>
-          </select>
+        <div class="field"><label>Auditoría</label>
+          <select id="listAud" onchange="renderListado()"><option value="">Todas</option></select>
         </div>
         <div class="field"><label>Estado</label>
           <select id="listEstado" onchange="renderListado()">
-            <option value="">Todos</option>
-            <option>Abierto</option><option>En gestión</option><option>Pendiente</option><option>Completado</option><option>Cerrado</option>
+            <option value="">Todos</option><option>Realizada</option><option>Pendiente</option>
+          </select>
+        </div>
+        <div class="field"><label>Resultado</label>
+          <select id="listResultado" onchange="renderListado()">
+            <option value="">Todos</option><option>Cumplió</option><option>No cumplió</option>
           </select>
         </div>
       </div>
-      <div class="panel-body"><table id="tblCasos"></table></div>
+      <div class="panel-body"><table id="tblAud"></table></div>
     </div>
   </div>
 </div>
 
 <script>
-let CASOS = [];
-const SUBTIPOS = {
-  'Reporte de Software': {options:['Siesa Enterprise','Siesa Cloud','Siesa Access','Siesa POS','Microsoft 365','Buk','iVentas'], subLabel:'Software', detailLabel:'Solicitante'},
-  'Infraestructura': {options:['Hardware','Software'], subLabel:'Tipo de servicio', detailLabel:'Equipo / Empleado'},
-  'Gestión de Datos': {options:['Desbloqueo de usuario','Restablecimiento de contraseña','Cambio de contraseña','Creación de usuario','Olvidé mi clave'], subLabel:'Tipo de solicitud', detailLabel:'Usuario'}
-};
-const ESTADOS = ['Abierto','En gestión','Pendiente','Completado','Cerrado'];
-const ESTADO_TAG = {Abierto:'warn','En gestión':'mgmt', Pendiente:'bad', Completado:'ok', Cerrado:'info'};
-const ESTADO_COLOR = {Abierto:'var(--amber)','En gestión':'var(--purple)', Pendiente:'var(--red)', Completado:'var(--teal)', Cerrado:'var(--blue)'};
+const AUDITORIAS_CONFIG = [
+ {id:1, nombre:'1. Órdenes de compra por ítem', modo:'punto'},
+ {id:2, nombre:'2. Documentos de compra por ítem', modo:'punto'},
+ {id:3, nombre:'3. Transferencia en tránsito', modo:'bodega'},
+ {id:4, nombre:'4. Auditoría de documentos', modo:'persona'},
+ {id:5, nombre:'5. Órdenes de producción por ítem', modo:'persona'},
+ {id:6, nombre:'6. Componentes por O.Ps', modo:'persona'},
+ {id:7, nombre:'7. Pedidos por ítem', modo:'persona'}
+];
+const TIPOS_PUNTO = ['001 Plantas de producción','002 Puntos de venta'];
+const ESTADOS_AUD = ['Realizada','Pendiente'];
+const RESULTADOS_AUD = ['Cumplió','No cumplió'];
+const ESTADO_TAG = {Realizada:'ok', Pendiente:'bad'};
+
+let AUDITS = [];
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
-function today(){ return new Date().toISOString().slice(0,10); }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+const MESES_CORTOS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+function periodoAuditado(fechaStr){
+  if(!fechaStr) return '—';
+  const d = new Date(fechaStr+'T00:00:00');
+  const fin = new Date(d); fin.setDate(fin.getDate()-1);
+  const inicio = new Date(d); inicio.setDate(inicio.getDate()-7);
+  const dd = (dt)=> String(dt.getDate()).padStart(2,'0');
+  const mIni = MESES_CORTOS[inicio.getMonth()], mFin = MESES_CORTOS[fin.getMonth()];
+  if(mIni===mFin && inicio.getFullYear()===fin.getFullYear()) return `${dd(inicio)} - ${dd(fin)} ${mFin} ${fin.getFullYear()}`;
+  return `${dd(inicio)} ${mIni} ${inicio.getFullYear()} - ${dd(fin)} ${mFin} ${fin.getFullYear()}`;
+}
+function cfgFor(id){ return AUDITORIAS_CONFIG.find(a=>a.id===Number(id)); }
+function responsableLabel(rec){
+  const cfg = cfgFor(rec.auditoriaId);
+  if(cfg.modo==='bodega') return rec.encargado || rec.entidad || '—';
+  return rec.entidad || '—';
+}
+function detalleLabel(rec){
+  const cfg = cfgFor(rec.auditoriaId);
+  if(cfg.modo==='punto') return rec.tipoPunto || '—';
+  if(cfg.modo==='bodega') return 'Bodega: ' + (rec.entidad||'—');
+  return '—';
+}
 
 async function loadAll(){
-  try{ const r = await window.storage.get('casos', false); CASOS = r ? JSON.parse(r.value) : []; }catch(e){ CASOS = []; }
-  document.getElementById('fechaInput').value = today();
+  try{ const r = await window.storage.get('auditorias_siesa', false); AUDITS = r ? JSON.parse(r.value) : []; }catch(e){ AUDITS = []; }
+  initFormStatics();
+  document.getElementById('fechaInput').value = todayStr();
+  updatePeriodoPreview();
+  document.getElementById('fechaInput').addEventListener('input', updatePeriodoPreview);
   renderAll();
 }
+function updatePeriodoPreview(){
+  document.getElementById('periodoPreviewText').textContent = periodoAuditado(document.getElementById('fechaInput').value);
+}
 async function persist(){
-  try{ await window.storage.set('casos', JSON.stringify(CASOS), false); }catch(e){ console.error('storage error', e); }
+  try{ await window.storage.set('auditorias_siesa', JSON.stringify(AUDITS), false); }catch(e){ console.error('storage error', e); }
 }
 
 /* tabs */
@@ -207,48 +242,98 @@ document.querySelectorAll('.tab').forEach(t=>{
   });
 });
 
-/* form dynamic subtipo */
-document.getElementById('catSelect').addEventListener('change', e=>{
-  const cat = e.target.value;
-  const subSelect = document.getElementById('subSelect');
-  const subLabel = document.getElementById('subLabel');
-  const detailLabel = document.getElementById('detailLabel');
-  if(!cat){ subSelect.disabled = true; subSelect.innerHTML = '<option value="">Seleccione categoría primero</option>'; return; }
-  const cfg = SUBTIPOS[cat];
-  subSelect.disabled = false;
-  subLabel.textContent = cfg.subLabel;
-  detailLabel.textContent = cfg.detailLabel;
-  subSelect.innerHTML = '<option value="">Seleccione...</option>' + cfg.options.map(o=>`<option>${o}</option>`).join('');
-});
+function initFormStatics(){
+  document.getElementById('audSelect').innerHTML = '<option value="">Seleccione...</option>' +
+    AUDITORIAS_CONFIG.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
+  document.getElementById('listAud').innerHTML = '<option value="">Todas</option>' +
+    AUDITORIAS_CONFIG.map(a=>`<option value="${a.id}">${a.nombre}</option>`).join('');
+}
 
-document.getElementById('fCaso').addEventListener('submit', e=>{
+function uniqueValues(auditoriaId, field, extraFilter){
+  return [...new Set(AUDITS.filter(r=>r.auditoriaId===Number(auditoriaId) && (!extraFilter||extraFilter(r))).map(r=>r[field]).filter(Boolean))];
+}
+
+document.getElementById('audSelect').addEventListener('change', renderSubFields);
+function renderSubFields(){
+  const audId = Number(document.getElementById('audSelect').value);
+  const cont = document.getElementById('subFieldsContainer');
+  if(!audId){ cont.innerHTML=''; return; }
+  const cfg = cfgFor(audId);
+  if(cfg.modo==='punto'){
+    cont.innerHTML = `
+      <div class="field"><label>Tipo de punto</label>
+        <select id="tipoPuntoSelect">
+          <option value="">Seleccione...</option>
+          ${TIPOS_PUNTO.map(t=>`<option>${t}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Persona responsable</label>
+        <input type="text" id="entidadInput" list="dlPunto" placeholder="Nombre de la persona">
+        <datalist id="dlPunto"></datalist>
+      </div>`;
+    document.getElementById('tipoPuntoSelect').addEventListener('change', ()=>{
+      const tipo = document.getElementById('tipoPuntoSelect').value;
+      const vals = uniqueValues(audId,'entidad', r=>r.tipoPunto===tipo);
+      document.getElementById('dlPunto').innerHTML = vals.map(v=>`<option value="${v}">`).join('');
+    });
+  } else if(cfg.modo==='bodega'){
+    const bodegas = uniqueValues(audId,'entidad');
+    const encargados = uniqueValues(audId,'encargado');
+    cont.innerHTML = `
+      <div class="field"><label>Bodega</label>
+        <input type="text" id="entidadInput" list="dlBodega" placeholder="Nombre de la bodega">
+        <datalist id="dlBodega">${bodegas.map(b=>`<option value="${b}">`).join('')}</datalist>
+      </div>
+      <div class="field"><label>Encargado de la bodega</label>
+        <input type="text" id="encargadoInput" list="dlEncargado" placeholder="Nombre del responsable">
+        <datalist id="dlEncargado">${encargados.map(e=>`<option value="${e}">`).join('')}</datalist>
+      </div>`;
+  } else {
+    const personas = uniqueValues(audId,'entidad');
+    cont.innerHTML = `
+      <div class="field"><label>Persona responsable</label>
+        <input type="text" id="entidadInput" list="dlPersona" placeholder="Nombre del responsable">
+        <datalist id="dlPersona">${personas.map(p=>`<option value="${p}">`).join('')}</datalist>
+      </div>`;
+  }
+}
+
+document.getElementById('fAud').addEventListener('submit', e=>{
   e.preventDefault();
-  const fd = new FormData(e.target);
-  CASOS.unshift({
+  const audId = Number(document.getElementById('audSelect').value);
+  if(!audId){ showToast('Selecciona una auditoría'); return; }
+  const cfg = cfgFor(audId);
+  const entidadEl = document.getElementById('entidadInput');
+  const entidad = entidadEl ? entidadEl.value.trim() : '';
+  if(!entidad){ showToast('Falta indicar el responsable / punto / bodega'); return; }
+  if(cfg.modo==='punto' && !document.getElementById('tipoPuntoSelect').value){ showToast('Selecciona el tipo de punto'); return; }
+
+  const rec = {
     id: uid(),
-    categoria: fd.get('categoria'),
-    subtipo: fd.get('subtipo'),
-    detalle: fd.get('detalle'),
-    fecha: fd.get('fecha'),
-    estado: fd.get('estado'),
-    descripcion: fd.get('descripcion')
-  });
+    auditoriaId: audId,
+    tipoPunto: cfg.modo==='punto' ? document.getElementById('tipoPuntoSelect').value : null,
+    entidad,
+    encargado: cfg.modo==='bodega' ? (document.getElementById('encargadoInput').value.trim()||null) : null,
+    fecha: document.getElementById('fechaInput').value,
+    resultado: document.getElementById('resultadoInput').value,
+    hallazgos: Number(document.getElementById('hallazgosInput').value||0),
+    estado: document.getElementById('estadoInput').value,
+    observaciones: document.getElementById('obsInput').value
+  };
+  AUDITS.unshift(rec);
   persist();
   e.target.reset();
-  document.getElementById('fechaInput').value = today();
-  document.getElementById('subSelect').disabled = true;
-  document.getElementById('subSelect').innerHTML = '<option value="">Seleccione categoría primero</option>';
+  document.getElementById('subFieldsContainer').innerHTML = '';
+  document.getElementById('audSelect').value = '';
+  document.getElementById('fechaInput').value = todayStr();
+  updatePeriodoPreview();
   renderAll();
-  showToast('Caso registrado correctamente');
+  showToast('Auditoría registrada correctamente');
 });
 
 function showToast(msg){
   let t = document.getElementById('toast');
-  if(!t){
-    t = document.createElement('div');
-    t.id = 'toast';
-    document.body.appendChild(t);
-  }
+  if(!t){ t = document.createElement('div'); t.id='toast'; document.body.appendChild(t); }
   t.textContent = msg;
   t.classList.remove('show'); void t.offsetWidth; t.classList.add('show');
   clearTimeout(window._toastTimer);
@@ -256,89 +341,116 @@ function showToast(msg){
 }
 
 function updateEstado(id, value){
-  const c = CASOS.find(x=>x.id===id); if(!c) return;
-  c.estado = value; persist(); renderAll();
+  const r = AUDITS.find(x=>x.id===id); if(!r) return;
+  r.estado = value; persist(); renderAll();
 }
-function delCaso(id){
-  CASOS = CASOS.filter(c=>c.id!==id); persist(); renderAll();
-}
-window.updateEstado = updateEstado; window.delCaso = delCaso;
+function delAud(id){ AUDITS = AUDITS.filter(r=>r.id!==id); persist(); renderAll(); }
+window.updateEstado = updateEstado; window.delAud = delAud;
 
-/* filtered set for dashboard */
-function filteredCasos(){
+/* filtered by period (fecha de registro) */
+function filteredAudits(){
   const desde = document.getElementById('fDesde').value;
   const hasta = document.getElementById('fHasta').value;
-  return CASOS.filter(c=>{
-    if(desde && c.fecha < desde) return false;
-    if(hasta && c.fecha > hasta) return false;
+  return AUDITS.filter(r=>{
+    if(desde && r.fecha < desde) return false;
+    if(hasta && r.fecha > hasta) return false;
     return true;
   });
 }
 
 /* ---------- DASHBOARD ---------- */
-function renderDashboard(){
-  const data = filteredCasos();
-  const total = data.length;
-  const porEstado = {};
-  ESTADOS.forEach(e=>porEstado[e]=0);
-  data.forEach(c=>{ if(porEstado[c.estado]===undefined) porEstado[c.estado]=0; porEstado[c.estado]++; });
-
-  const accentMap = {Abierto:'warn','En gestión':'mgmt',Pendiente:'bad',Completado:'ok',Cerrado:'ok'};
-  let html = `<div class="card"><div class="k-lbl">Total de casos</div><div class="k-val">${total}</div></div>`;
-  ESTADOS.forEach(e=>{
-    html += `<div class="card accent-${accentMap[e]}"><div class="k-lbl">${e}</div><div class="k-val">${porEstado[e]}</div></div>`;
-  });
-  document.getElementById('kpiEstados').innerHTML = html;
-
-  const porCat = {};
-  Object.keys(SUBTIPOS).forEach(c=>porCat[c]=0);
-  data.forEach(c=>{ if(porCat[c.categoria]===undefined) porCat[c.categoria]=0; porCat[c.categoria]++; });
-  const maxCat = Math.max(1,...Object.values(porCat));
-  document.getElementById('kpiCategorias').innerHTML = Object.keys(porCat).map(c=>`
-    <div class="rank-row"><div class="rank-name">${c}</div>
-    <div class="rank-bar-wrap"><div class="rank-bar" style="width:${porCat[c]/maxCat*100}%;background:var(--blue)"></div></div>
-    <div class="rank-val">${porCat[c]}</div></div>`).join('');
-
-  renderRanking('rankSoftware', data.filter(c=>c.categoria==='Reporte de Software'), SUBTIPOS['Reporte de Software'].options, 'var(--teal)');
-  renderRanking('rankInfra', data.filter(c=>c.categoria==='Infraestructura'), SUBTIPOS['Infraestructura'].options, 'var(--amber)');
-  renderRanking('rankDatos', data.filter(c=>c.categoria==='Gestión de Datos'), SUBTIPOS['Gestión de Datos'].options, 'var(--purple)');
+function cumplimientoPct(subset){
+  const realizadas = subset.filter(r=>r.estado==='Realizada');
+  if(!realizadas.length) return null;
+  const cumplidas = realizadas.filter(r=>r.resultado==='Cumplió').length;
+  return (cumplidas/realizadas.length)*100;
 }
-function renderRanking(elId, subset, options, color){
-  const counts = {};
-  options.forEach(o=>counts[o]=0);
-  subset.forEach(c=>{ if(counts[c.subtipo]===undefined) counts[c.subtipo]=0; counts[c.subtipo]++; });
-  const max = Math.max(1,...Object.values(counts));
-  const el = document.getElementById(elId);
-  if(!subset.length){ el.innerHTML = '<div class="empty">Sin casos registrados aún.</div>'; return; }
-  el.innerHTML = Object.keys(counts).sort((a,b)=>counts[b]-counts[a]).map(k=>`
-    <div class="rank-row"><div class="rank-name">${k}</div>
-    <div class="rank-bar-wrap"><div class="rank-bar" style="width:${counts[k]/max*100}%;background:${color}"></div></div>
-    <div class="rank-val">${counts[k]}</div></div>`).join('');
+function renderDashboard(){
+  const data = filteredAudits();
+  const total = data.length;
+  const pctGeneral = cumplimientoPct(data);
+  const totalHallazgos = data.reduce((s,r)=>s+Number(r.hallazgos||0),0);
+  const pendientes = data.filter(r=>r.estado==='Pendiente').length;
+  const noCumplio = data.filter(r=>r.estado==='Realizada' && r.resultado==='No cumplió').length;
+
+  document.getElementById('kpiGeneral').innerHTML = `
+    <div class="card"><div class="k-lbl">Auditorías registradas</div><div class="k-val">${total}</div></div>
+    <div class="card accent-${pctGeneral===null?'':pctGeneral>=80?'ok':pctGeneral>=50?'warn':'bad'}"><div class="k-lbl">% Cumplimiento general</div><div class="k-val">${pctGeneral===null?'—':pctGeneral.toFixed(0)+'%'}</div></div>
+    <div class="card accent-${totalHallazgos===0?'ok':'warn'}"><div class="k-lbl">Hallazgos / doc. pendientes</div><div class="k-val">${totalHallazgos}</div></div>
+    <div class="card accent-${noCumplio===0?'ok':'bad'}"><div class="k-lbl">No cumplieron</div><div class="k-val">${noCumplio}</div></div>
+    <div class="card accent-${pendientes===0?'ok':'warn'}"><div class="k-lbl">Pendientes</div><div class="k-val">${pendientes}</div></div>
+  `;
+
+  document.getElementById('gridAud').innerHTML = AUDITORIAS_CONFIG.map(a=>{
+    const subset = data.filter(r=>r.auditoriaId===a.id);
+    const veces = subset.length;
+    const pct = cumplimientoPct(subset);
+    const hall = subset.reduce((s,r)=>s+Number(r.hallazgos||0),0);
+    return `<div class="aud-card">
+      <div class="num">AUDITORÍA ${a.id}</div>
+      <div class="name">${a.nombre.replace(a.id+'. ','')}</div>
+      <div class="stats">
+        <div>Realizadas<b>${veces}</b></div>
+        <div>Cumplimiento<b>${pct===null?'—':pct.toFixed(0)+'%'}</b></div>
+        <div>Hallazgos<b>${hall}</b></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('gridRank').innerHTML = AUDITORIAS_CONFIG.map(a=>{
+    const subset = data.filter(r=>r.auditoriaId===a.id);
+    return `<div class="panel" style="margin-bottom:0;"><div class="panel-head"><h3>${a.nombre}</h3></div><div class="panel-body">${rankingHtml(subset)}</div></div>`;
+  }).join('');
+}
+
+function rankingHtml(subset){
+  const realizadas = subset.filter(r=>r.estado==='Realizada');
+  if(!realizadas.length) return '<div class="empty">Sin auditorías realizadas en el periodo.</div>';
+  const byResp = {};
+  realizadas.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
+  const rows = Object.keys(byResp).map(k=>({k, pct: byResp[k].cumplio/byResp[k].total*100, total:byResp[k].total}))
+    .sort((a,b)=>b.pct-a.pct);
+  return rows.map((r,i)=>{
+    const color = i===0 ? 'var(--teal)' : (i===rows.length-1 && r.pct<70 ? 'var(--red)' : 'var(--blue)');
+    const flag = i===0 ? ' <span class="tag ok">Más cumplido</span>' : (i===rows.length-1 && r.pct<70 ? ' <span class="tag bad">Atención</span>' : '');
+    return `<div class="rank-row">
+      <div class="rank-name">${r.k}${flag} <span class="mono" style="color:var(--muted);">(${r.total})</span></div>
+      <div class="rank-bar-wrap"><div class="rank-bar" style="width:${r.pct}%;background:${color}"></div></div>
+      <div class="rank-val">${r.pct.toFixed(0)}%</div>
+    </div>`;
+  }).join('');
 }
 
 /* ---------- LISTADO ---------- */
 function renderListado(){
-  const cat = document.getElementById('listCat').value;
-  const est = document.getElementById('listEstado').value;
-  const rows = CASOS.filter(c=> (!cat||c.categoria===cat) && (!est||c.estado===est) )
-    .map(c=>`<tr>
-      <td>${c.categoria}</td><td>${c.subtipo}</td><td>${c.detalle||'—'}</td>
-      <td class="mono">${c.fecha}</td>
-      <td><select class="status-inline" onchange="updateEstado('${c.id}',this.value)">
-        ${ESTADOS.map(e=>`<option ${e===c.estado?'selected':''}>${e}</option>`).join('')}</select></td>
-      <td>${c.descripcion||''}</td>
-      <td><button class="btn danger" onclick="delCaso('${c.id}')">Eliminar</button></td>
-    </tr>`);
-  document.getElementById('tblCasos').innerHTML = `<tr><th>Categoría</th><th>Subtipo</th><th>Detalle</th><th>Fecha</th><th>Estado</th><th>Descripción</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="7" class="empty">Sin casos registrados aún.</td></tr>'}`;
+  const audFilter = document.getElementById('listAud').value;
+  const estFilter = document.getElementById('listEstado').value;
+  const resFilter = document.getElementById('listResultado').value;
+  const rows = AUDITS.filter(r=> (!audFilter||r.auditoriaId===Number(audFilter)) && (!estFilter||r.estado===estFilter) && (!resFilter||r.resultado===resFilter) )
+    .map(r=>{
+      const cfg = cfgFor(r.auditoriaId);
+      return `<tr>
+      <td>${cfg.nombre}</td>
+      <td>${detalleLabel(r)}</td>
+      <td>${responsableLabel(r)}</td>
+      <td class="mono">${periodoAuditado(r.fecha)}</td>
+      <td><span class="tag ${r.resultado==='Cumplió'?'ok':'bad'}">${r.resultado}</span></td>
+      <td class="mono">${r.hallazgos}</td>
+      <td><select class="status-inline" onchange="updateEstado('${r.id}',this.value)">
+        ${ESTADOS_AUD.map(e=>`<option ${e===r.estado?'selected':''}>${e}</option>`).join('')}</select></td>
+      <td>${r.observaciones||''}</td>
+      <td><button class="btn danger" onclick="delAud('${r.id}')">Eliminar</button></td>
+    </tr>`;});
+  document.getElementById('tblAud').innerHTML = `<tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Hallazgos</th><th>Estado</th><th>Observaciones</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="9" class="empty">Sin auditorías registradas aún.</td></tr>'}`;
 }
 
 function renderAll(){ renderDashboard(); renderListado(); }
 
-/* ---------- GENERADOR DE GRÁFICAS (canvas -> imagen PNG) ---------- */
+/* ---------- GENERADOR DE GRÁFICAS ---------- */
 function makeBarChartImage(title, items, colorFn){
   const n = Math.max(items.length, 1);
-  const marginLeft = 210, marginRight = 50, marginTop = 46, marginBottom = 20;
-  const gap = 38, barHeight = 22, chartW = 460;
+  const marginLeft = 220, marginRight = 50, marginTop = 46, marginBottom = 20;
+  const gap = 38, barHeight = 22, chartW = 440;
   const W = marginLeft + chartW + marginRight;
   const H = marginTop + n*gap + marginBottom;
   const canvas = document.createElement('canvas');
@@ -355,7 +467,7 @@ function makeBarChartImage(title, items, colorFn){
     ctx.fillStyle = colorFn(it,i);
     ctx.fillRect(marginLeft, y, Math.max(w,2), barHeight);
     ctx.fillStyle = '#222222'; ctx.font = '13px Arial, sans-serif'; ctx.textAlign = 'right';
-    let lbl = it.label.length > 26 ? it.label.slice(0,24)+'…' : it.label;
+    let lbl = String(it.label).length > 30 ? String(it.label).slice(0,28)+'…' : it.label;
     ctx.fillText(lbl, marginLeft-10, y+barHeight/2+5);
     ctx.textAlign = 'left'; ctx.font = 'bold 13px Arial, sans-serif';
     ctx.fillText(String(it.value), marginLeft+w+8, y+barHeight/2+5);
@@ -366,49 +478,53 @@ function makeBarChartImage(title, items, colorFn){
   }
   return canvas.toDataURL('image/png');
 }
-const COLOR_ESTADO_PRINT = {Abierto:'#D98A2B','En gestión':'#8B5FBF', Pendiente:'#C8465B', Completado:'#1F9D73', Cerrado:'#3D6FD1'};
 function chartImgTag(dataUrl, w){ return `<img src="${dataUrl}" width="${w||600}" style="display:block;margin:8px 0 4px;">`; }
+function pctColor(v){ return v>=80 ? '#1F9D73' : v>=50 ? '#D98A2B' : '#C8465B'; }
 
 /* ---------- EXPORTAR A WORD ---------- */
 function exportWord(){
-  const data = filteredCasos();
+  const data = filteredAudits();
   const desde = document.getElementById('fDesde').value || 'inicio de registros';
   const hasta = document.getElementById('fHasta').value || 'hoy';
   const total = data.length;
-  const porEstado = {}; ESTADOS.forEach(e=>porEstado[e]=0);
-  data.forEach(c=>{ porEstado[c.estado] = (porEstado[c.estado]||0)+1; });
-  const porCat = {}; Object.keys(SUBTIPOS).forEach(c=>porCat[c]=0);
-  data.forEach(c=>{ porCat[c.categoria] = (porCat[c.categoria]||0)+1; });
 
-  function subtipoItems(categoria){
-    const opts = SUBTIPOS[categoria].options;
-    const counts = {}; opts.forEach(o=>counts[o]=0);
-    data.filter(c=>c.categoria===categoria).forEach(c=>{ counts[c.subtipo]=(counts[c.subtipo]||0)+1; });
-    return Object.keys(counts).map(k=>({label:k, value:counts[k]})).sort((a,b)=>b.value-a.value);
-  }
+  const detalleFilas = data.map(r=>{
+    const cfg = cfgFor(r.auditoriaId);
+    return `<tr>
+    <td>${cfg.nombre}</td><td>${detalleLabel(r)}</td><td>${responsableLabel(r)}</td><td>${periodoAuditado(r.fecha)}</td>
+    <td style="text-align:center;">${r.resultado}</td><td style="text-align:center;">${r.hallazgos}</td>
+    <td>${r.estado}</td><td>${r.observaciones||''}</td>
+  </tr>`;}).join('');
 
-  const detalleFilas = data.map(c=>`<tr>
-    <td>${c.categoria}</td><td>${c.subtipo}</td><td>${c.detalle||'—'}</td><td>${c.fecha}</td><td>${c.estado}</td><td>${c.descripcion||''}</td>
-  </tr>`).join('');
+  /* gráfica general: % cumplimiento por auditoría */
+  const imgCumplimiento = makeBarChartImage('% de cumplimiento por auditoría',
+    AUDITORIAS_CONFIG.map(a=>{
+      const subset = data.filter(r=>r.auditoriaId===a.id);
+      const pct = cumplimientoPct(subset);
+      return {label:a.nombre, value: pct===null?0:Math.round(pct)};
+    }), it=>pctColor(it.value));
 
-  /* generar imágenes de gráficas */
-  const imgEstado = makeBarChartImage('Casos por estado',
-    ESTADOS.map(e=>({label:e, value:porEstado[e]||0})),
-    (it)=>COLOR_ESTADO_PRINT[it.label]||'#3D6FD1');
-  const imgCategoria = makeBarChartImage('Casos por categoría',
-    Object.keys(porCat).map(c=>({label:c, value:porCat[c]})),
-    ()=>'#3D6FD1');
-  const imgSoftware = makeBarChartImage('Reportes de Software por programa',
-    subtipoItems('Reporte de Software'), ()=>'#1F9D73');
-  const imgInfra = makeBarChartImage('Infraestructura — Hardware vs Software',
-    subtipoItems('Infraestructura'), ()=>'#D98A2B');
-  const imgDatos = makeBarChartImage('Gestión de Datos por tipo de solicitud',
-    subtipoItems('Gestión de Datos'), ()=>'#8B5FBF');
+  const imgHallazgos = makeBarChartImage('Hallazgos / documentos pendientes por auditoría',
+    AUDITORIAS_CONFIG.map(a=>{
+      const subset = data.filter(r=>r.auditoriaId===a.id);
+      const hall = subset.reduce((s,r)=>s+Number(r.hallazgos||0),0);
+      return {label:a.nombre, value: hall};
+    }), ()=>'#8B5FBF');
+
+  /* gráficas por auditoría: ranking de responsables por % cumplimiento */
+  const imgsPorAuditoria = AUDITORIAS_CONFIG.map(a=>{
+    const subset = data.filter(r=>r.auditoriaId===a.id).filter(r=>r.estado==='Realizada');
+    const byResp = {};
+    subset.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
+    const items = Object.keys(byResp).map(k=>({label:k, value: Math.round(byResp[k].cumplio/byResp[k].total*100)}))
+      .sort((x,y)=>y.value-x.value);
+    return {titulo: a.nombre, img: makeBarChartImage('% de cumplimiento por responsable — ' + a.nombre, items, it=>pctColor(it.value))};
+  });
 
   const T = (s)=> '<'+s+'>';
   const html = `
   ${T("html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'")}
-  ${T('head')}<meta charset="utf-8"><title>Reporte KPI Gestión TI</title>
+  ${T('head')}<meta charset="utf-8"><title>Informe Auditorías Siesa Enterprise</title>
   ${T('style')}
     body{font-family:Calibri,Arial,sans-serif;color:#1a1a1a;}
     h1{color:#1F3864;font-size:22px;margin-bottom:2px;}
@@ -419,28 +535,20 @@ function exportWord(){
     th{background:#1F3864;color:#fff;}
   ${T('/style')}${T('/head')}
   ${T('body')}
-    <h1>Reporte KPI — Gestión TI</h1>
-    <div class="sub">Gestor TDI · Periodo: ${desde} a ${hasta} · Generado el ${today()}</div>
+    <h1>Informe de Auditorías Semanales — Siesa Enterprise</h1>
+    <div class="sub">Gestor TDI · Periodo: ${desde} a ${hasta} · Generado el ${new Date().toISOString().slice(0,10)} · Total auditorías registradas: ${total}</div>
 
-    <h2>Resumen general</h2>
-    <div class="sub">Total de casos registrados: <b>${total}</b></div>
-    ${chartImgTag(imgEstado, 620)}
+    <h2>Resumen — % de cumplimiento por auditoría</h2>
+    ${chartImgTag(imgCumplimiento, 640)}
 
-    <h2>Casos por categoría</h2>
-    ${chartImgTag(imgCategoria, 620)}
+    <h2>Resumen — hallazgos / documentos pendientes por auditoría</h2>
+    ${chartImgTag(imgHallazgos, 640)}
 
-    <h2>Reportes de Software — detalle por programa</h2>
-    ${chartImgTag(imgSoftware, 620)}
+    ${imgsPorAuditoria.map(o=>`<h2>${o.titulo}</h2>${chartImgTag(o.img, 640)}`).join('')}
 
-    <h2>Infraestructura — detalle por tipo de servicio</h2>
-    ${chartImgTag(imgInfra, 620)}
-
-    <h2>Gestión de Datos — detalle por tipo de solicitud</h2>
-    ${chartImgTag(imgDatos, 620)}
-
-    <h2>Listado detallado de casos</h2>
-    <table><tr><th>Categoría</th><th>Subtipo</th><th>Detalle</th><th>Fecha</th><th>Estado</th><th>Descripción</th></tr>
-      ${detalleFilas || '<tr><td colspan="6">Sin casos registrados en el periodo.</td></tr>'}
+    <h2>Listado detallado de auditorías</h2>
+    <table><tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Hallazgos</th><th>Estado</th><th>Observaciones</th></tr>
+      ${detalleFilas || '<tr><td colspan="8">Sin auditorías registradas en el periodo.</td></tr>'}
     </table>
   ${T('/body')}${T('/html')}`;
 
@@ -448,7 +556,7 @@ function exportWord(){
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'Reporte_KPI_Gestion_TI_' + today() + '.doc';
+  a.download = 'Informe_Auditorias_Siesa_' + new Date().toISOString().slice(0,10) + '.doc';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
