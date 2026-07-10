@@ -144,10 +144,23 @@ select.status-inline{background:var(--surface2);border:1px solid var(--border);c
             <textarea id="hallazgosInput" rows="2" placeholder="Uno por línea, ej: Factura 00123&#10;Remisión 4521 — dejar vacío si no hay pendientes"></textarea>
           </div>
           <div class="field" style="min-width:220px;"><label>Observaciones</label><input type="text" id="obsInput" placeholder="Opcional"></div>
+          <div class="field" style="min-width:220px;">
+            <label>Evidencia de aviso (imagen, opcional)</label>
+            <input type="file" accept="image/*" id="evidenciaInput">
+            <div id="evidenciaPreviewWrap" style="display:none;align-items:center;gap:8px;margin-top:6px;">
+              <img id="evidenciaPreview" style="max-width:110px;max-height:80px;border-radius:6px;border:1px solid var(--border);object-fit:cover;">
+              <button type="button" class="btn danger" onclick="clearEvidencia()">Quitar</button>
+            </div>
+          </div>
           <button class="btn" type="submit">Registrar auditoría</button>
         </form>
       </div>
     </div>
+  </div>
+
+  <!-- MODAL VISOR DE IMAGEN -->
+  <div id="imgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;align-items:center;justify-content:center;cursor:zoom-out;" onclick="closeImageModal()">
+    <img id="imgModalImg" style="max-width:90%;max-height:90%;border-radius:8px;box-shadow:0 10px 40px rgba(0,0,0,.5);">
   </div>
 
   <!-- LISTADO -->
@@ -182,6 +195,45 @@ const TIPOS_PUNTO = ['001 Plantas de producción','002 Puntos de venta'];
 const RESULTADOS_AUD = ['Cumplió','No cumplió'];
 
 let AUDITS = [];
+let evidenciaData = null;
+
+function compressImage(file){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        const maxDim = 900;
+        let w = img.width, h = img.height;
+        if(w > h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+        else if(h >= w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.onerror = ()=>reject(new Error('No se pudo leer la imagen'));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=>reject(new Error('No se pudo leer el archivo'));
+    reader.readAsDataURL(file);
+  });
+}
+function clearEvidencia(){
+  evidenciaData = null;
+  const inp = document.getElementById('evidenciaInput');
+  if(inp) inp.value = '';
+  const wrap = document.getElementById('evidenciaPreviewWrap');
+  if(wrap) wrap.style.display = 'none';
+}
+function showImageModal(src){
+  document.getElementById('imgModalImg').src = src;
+  document.getElementById('imgModal').style.display = 'flex';
+}
+function closeImageModal(){ document.getElementById('imgModal').style.display = 'none'; }
+window.clearEvidencia = clearEvidencia;
+window.showImageModal = showImageModal;
+window.closeImageModal = closeImageModal;
 
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -213,6 +265,18 @@ async function loadAll(){
   try{ const r = await window.storage.get('auditorias_siesa', false); AUDITS = r ? JSON.parse(r.value) : []; }catch(e){ AUDITS = []; }
   initFormStatics();
   setDefaultPeriodo();
+  document.getElementById('evidenciaInput').addEventListener('change', async (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    try{
+      evidenciaData = await compressImage(file);
+      document.getElementById('evidenciaPreview').src = evidenciaData;
+      document.getElementById('evidenciaPreviewWrap').style.display = 'flex';
+    }catch(err){
+      showToast('No se pudo procesar la imagen');
+      clearEvidencia();
+    }
+  });
   renderAll();
 }
 function setDefaultPeriodo(){
@@ -315,7 +379,8 @@ document.getElementById('fAud').addEventListener('submit', e=>{
     periodoFin,
     resultado: document.getElementById('resultadoInput').value,
     hallazgosDetalle,
-    observaciones: document.getElementById('obsInput').value
+    observaciones: document.getElementById('obsInput').value,
+    evidencia: evidenciaData
   };
   AUDITS.unshift(rec);
   persist();
@@ -323,6 +388,7 @@ document.getElementById('fAud').addEventListener('submit', e=>{
   document.getElementById('subFieldsContainer').innerHTML = '';
   document.getElementById('audSelect').value = '';
   setDefaultPeriodo();
+  clearEvidencia();
   renderAll();
   showToast('Auditoría registrada correctamente');
 });
@@ -424,10 +490,11 @@ function renderListado(){
       <td class="mono">${formatPeriodo(r.periodoInicio, r.periodoFin)}</td>
       <td><span class="tag ${r.resultado==='Cumplió'?'ok':'bad'}">${r.resultado}</span></td>
       <td>${hall.length ? `<span class="tag warn">${hall.length}</span> ${hall.join('; ')}` : '<span class="tag ok">0</span>'}</td>
+      <td>${r.evidencia ? `<img src="${r.evidencia}" style="width:42px;height:42px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--border);" onclick="showImageModal('${r.evidencia}')">` : '—'}</td>
       <td>${r.observaciones||''}</td>
       <td><button class="btn danger" onclick="delAud('${r.id}')">Eliminar</button></td>
     </tr>`;});
-  document.getElementById('tblAud').innerHTML = `<tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Observaciones</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="8" class="empty">Sin auditorías registradas aún.</td></tr>'}`;
+  document.getElementById('tblAud').innerHTML = `<tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Evidencia</th><th>Observaciones</th><th></th></tr>${rows.length?rows.join(''):'<tr><td colspan="9" class="empty">Sin auditorías registradas aún.</td></tr>'}`;
 }
 
 function renderAll(){ renderDashboard(); renderListado(); }
@@ -464,7 +531,6 @@ function makeBarChartImage(title, items, colorFn){
   }
   return canvas.toDataURL('image/png');
 }
-function chartImgTag(dataUrl, w){ return `<img src="${dataUrl}" width="${w||600}" style="display:block;margin:8px 0 4px;">`; }
 function pctColor(v){ return v>=80 ? '#1F9D73' : v>=50 ? '#D98A2B' : '#C8465B'; }
 
 /* ---------- EXPORTAR A WORD ---------- */
@@ -474,29 +540,44 @@ function exportWord(){
   const hasta = document.getElementById('fHasta').value || 'hoy';
   const total = data.length;
 
+  /* Word no muestra imágenes en base64 embebidas directo en <img src>.
+     Para que sí se vean, empaquetamos el documento como MHTML: cada imagen
+     va como una parte MIME aparte, referenciada en el HTML con "cid:xxx". */
+  const imageParts = [];
+  function registerImage(dataUrl, prefix){
+    const cid = prefix + '_' + imageParts.length + '@auditorias.local';
+    imageParts.push({cid, dataUrl});
+    return cid;
+  }
+
   const detalleFilas = data.map(r=>{
     const cfg = cfgFor(r.auditoriaId);
     const hall = r.hallazgosDetalle||[];
+    let evidenciaCell = '—';
+    if(r.evidencia){
+      const cid = registerImage(r.evidencia, 'evid');
+      evidenciaCell = `<img src="cid:${cid}" width="90">`;
+    }
     return `<tr>
     <td>${cfg.nombre}</td><td>${detalleLabel(r)}</td><td>${responsableLabel(r)}</td><td>${formatPeriodo(r.periodoInicio, r.periodoFin)}</td>
     <td style="text-align:center;">${r.resultado}</td><td>${hall.length ? hall.join('; ') : '—'}</td>
-    <td>${r.observaciones||''}</td>
+    <td>${evidenciaCell}</td><td>${r.observaciones||''}</td>
   </tr>`;}).join('');
 
   /* gráfica general: % cumplimiento por auditoría */
-  const imgCumplimiento = makeBarChartImage('% de cumplimiento por auditoría',
+  const cidCumplimiento = registerImage(makeBarChartImage('% de cumplimiento por auditoría',
     AUDITORIAS_CONFIG.map(a=>{
       const subset = data.filter(r=>r.auditoriaId===a.id);
       const pct = cumplimientoPct(subset);
       return {label:a.nombre, value: pct===null?0:Math.round(pct)};
-    }), it=>pctColor(it.value));
+    }), it=>pctColor(it.value)), 'chart');
 
-  const imgHallazgos = makeBarChartImage('Documentos pendientes / hallazgos por auditoría',
+  const cidHallazgos = registerImage(makeBarChartImage('Documentos pendientes / hallazgos por auditoría',
     AUDITORIAS_CONFIG.map(a=>{
       const subset = data.filter(r=>r.auditoriaId===a.id);
       const hall = subset.reduce((s,r)=>s+(r.hallazgosDetalle?r.hallazgosDetalle.length:0),0);
       return {label:a.nombre, value: hall};
-    }), ()=>'#8B5FBF');
+    }), ()=>'#8B5FBF'), 'chart');
 
   /* gráficas por auditoría: ranking de responsables por % cumplimiento */
   const imgsPorAuditoria = AUDITORIAS_CONFIG.map(a=>{
@@ -505,7 +586,8 @@ function exportWord(){
     subset.forEach(r=>{ const k = responsableLabel(r); byResp[k]=byResp[k]||{cumplio:0,total:0}; byResp[k].total++; if(r.resultado==='Cumplió') byResp[k].cumplio++; });
     const items = Object.keys(byResp).map(k=>({label:k, value: Math.round(byResp[k].cumplio/byResp[k].total*100)}))
       .sort((x,y)=>y.value-x.value);
-    return {titulo: a.nombre, img: makeBarChartImage('% de cumplimiento por responsable — ' + a.nombre, items, it=>pctColor(it.value))};
+    const cid = registerImage(makeBarChartImage('% de cumplimiento por responsable — ' + a.nombre, items, it=>pctColor(it.value)), 'chart');
+    return {titulo: a.nombre, cid};
   });
 
   const T = (s)=> '<'+s+'>';
@@ -526,20 +608,45 @@ function exportWord(){
     <div class="sub">Gestor TDI · Periodo: ${desde} a ${hasta} · Generado el ${new Date().toISOString().slice(0,10)} · Total auditorías registradas: ${total}</div>
 
     <h2>Resumen — % de cumplimiento por auditoría</h2>
-    ${chartImgTag(imgCumplimiento, 640)}
+    <img src="cid:${cidCumplimiento}" width="640" style="display:block;margin:8px 0 4px;">
 
     <h2>Resumen — documentos pendientes / hallazgos por auditoría</h2>
-    ${chartImgTag(imgHallazgos, 640)}
+    <img src="cid:${cidHallazgos}" width="640" style="display:block;margin:8px 0 4px;">
 
-    ${imgsPorAuditoria.map(o=>`<h2>${o.titulo}</h2>${chartImgTag(o.img, 640)}`).join('')}
+    ${imgsPorAuditoria.map(o=>`<h2>${o.titulo}</h2><img src="cid:${o.cid}" width="640" style="display:block;margin:8px 0 4px;">`).join('')}
 
     <h2>Listado detallado de auditorías</h2>
-    <table><tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Observaciones</th></tr>
-      ${detalleFilas || '<tr><td colspan="7">Sin auditorías registradas en el periodo.</td></tr>'}
+    <table><tr><th>Auditoría</th><th>Detalle</th><th>Responsable</th><th>Periodo auditado</th><th>Resultado</th><th>Documentos pendientes</th><th>Evidencia</th><th>Observaciones</th></tr>
+      ${detalleFilas || '<tr><td colspan="8">Sin auditorías registradas en el periodo.</td></tr>'}
     </table>
   ${T('/body')}${T('/html')}`;
 
-  const blob = new Blob(['\ufeff', html], {type:'application/msword'});
+  /* Empaquetar todo como MHTML (multipart/related) con las imágenes como
+     partes MIME independientes referenciadas por Content-ID. */
+  const boundary = '----AuditoriasSiesaBoundary_' + Date.now();
+  let mhtml = 'MIME-Version: 1.0\r\n';
+  mhtml += 'Content-Type: multipart/related; boundary="' + boundary + '"; type="text/html"\r\n\r\n';
+  mhtml += '--' + boundary + '\r\n';
+  mhtml += 'Content-Type: text/html; charset="utf-8"\r\n';
+  mhtml += 'Content-Transfer-Encoding: 8bit\r\n';
+  mhtml += 'Content-Location: informe_auditorias.html\r\n\r\n';
+  mhtml += html + '\r\n\r\n';
+
+  imageParts.forEach(p=>{
+    const m = p.dataUrl.match(/^data:([^;]+);base64,(.*)$/);
+    if(!m) return;
+    const mime = m[1];
+    const base64Wrapped = m[2].match(/.{1,76}/g).join('\r\n');
+    mhtml += '--' + boundary + '\r\n';
+    mhtml += 'Content-Type: ' + mime + '\r\n';
+    mhtml += 'Content-Transfer-Encoding: base64\r\n';
+    mhtml += 'Content-ID: <' + p.cid + '>\r\n';
+    mhtml += 'Content-Location: ' + p.cid + '\r\n\r\n';
+    mhtml += base64Wrapped + '\r\n\r\n';
+  });
+  mhtml += '--' + boundary + '--';
+
+  const blob = new Blob([mhtml], {type:'application/msword'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
